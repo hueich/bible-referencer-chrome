@@ -1,0 +1,21 @@
+{
+  "manifest_version": 2,
+
+  "name": "Bible Referencer",
+  "version": "0.1",
+  "description": "Turn Bible references on any webpage into hoverable tooltip and links.",
+
+  "browser_action": {
+    "default_title": "Bible Referencer"
+  },
+
+  "content_scripts": [
+    {
+      "matches": ["http://*/*", "https://*/*"],
+      "css": ["css/style.css"],
+      "js": ["js/inject.js"]
+    }
+  ],
+
+  "permissions": []
+}

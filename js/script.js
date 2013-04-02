@@ -9,41 +9,34 @@
   }
 
   function processPage() {
-
-    // DEBUG
-    var newDiv = document.createElement('p');
-    newDiv.id = 'walker-container';
-    document.body.appendChild(newDiv);
-    // END DEBUG
-
-    processEachNode(injectLinks);
-
+    console.log(elementSelector());
+    elementSelector().each(injectLinks);
   }
 
-  var processEachNode = function(processor) {
-    var walker = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT, nodeFilter, false);
-    while (walker.nextNode()) {
-      processor(walker.currentNode);
-    }
-  }
-
-  var nodeFilter = function(node) {
-    var $node = $(node);
-    if ($node.parents('script,noscript,style,a,textarea').length > 0) {
-      return NodeFilter.FILTER_REJECT;
-    }
-    console.log($node.text());
-    if ($.trim($node.text()) == '') {
-      console.log('it\'s empty!')
-      return NodeFilter.FILTER_REJECT;
-    }
-    console.log('accepted!');
-    return NodeFilter.FILTER_ACCEPT;
+  /**
+   * Returns a jQuery collection of selected elements.
+   */
+  var elementSelector = function() {
+    return $('body').find(':not(iframe)').addBack().contents().filter(function() {
+      if (this.nodeType == Node.TEXT_NODE) {
+        var $this = $(this);
+        return $this.text().trim() != ''
+            && $this.parents('script,noscript,style,a,textarea').length == 0;
+      }
+      return false;
+    });
   };
 
-  var injectLinks = function(node) {
-    // DEBUG
-    $('#walker-container').text($('#walker-container').text() + node.nodeValue + '\n');
-    // END DEBUG
-  }
+  var injectLinks = function() {
+    var $this = $(this);
+    // var html = $this.html();
+    var html = $this.text();
+    // console.log('before:' + html);
+    var pattern = /(\b(gen(esis)?|ex(odus)?|matt(hew)?|mark|luke|john)\s+\d+(:\d+)?(\s*(-|~)\s*\d+(:\d+)?)?\b)/gim;
+
+    html = html.replace(pattern, '<a href="verseLookup(\'$1\')">$1</a>');
+    // console.log('after: ' + html);
+    $this.html(html); // TODO: This doesn't seem to work on a text node. Need to do DOM manip.
+  };
+
 })();

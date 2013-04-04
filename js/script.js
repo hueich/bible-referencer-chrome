@@ -8,35 +8,41 @@
     return;
   }
 
+  // TODO: Fill out the rest of the patterns.
+  var BIBLE_REFERENCE_PATTERN = /(\b(gen(esis)?|ex(odus)?|matt(hew)?|mark|luke|john)\s+\d+(:\d+)?(\s*(-|~)\s*\d+(:\d+)?)?\b)/gim;
+  // TODO: Make replaced link call to a function.
+  var REPLACEMENT_STRING = '<a class="bible-referencer-link" href="javascript:alert(\'Bible reference: $1\');">$1</a>';
+
   function processPage() {
-    console.log(elementSelector());
-    elementSelector().each(injectLinks);
+    selectTextNodes().each(injectLink);
   }
 
   /**
-   * Returns a jQuery collection of selected elements.
+   * Returns a jQuery collection of text nodes.
    */
-  var elementSelector = function() {
+  var selectTextNodes = function() {
     return $('body').find(':not(iframe)').addBack().contents().filter(function() {
-      if (this.nodeType == Node.TEXT_NODE) {
-        var $this = $(this);
-        return $this.text().trim() != ''
-            && $this.parents('script,noscript,style,a,textarea').length == 0;
-      }
-      return false;
+      return this.nodeType == Node.TEXT_NODE && nodeFilter($(this));
     });
   };
 
-  var injectLinks = function() {
+  /**
+   * Returns true if node is accepted; false otherwise.
+   */
+  var nodeFilter = function($node) {
+    return $node.text().trim() != ''
+        // TODO: Add more excluded tags.
+        && $node.parents('script,noscript,style,a,textarea,select,img').length == 0;
+  }
+
+  var injectLink = function() {
     var $this = $(this);
-    // var html = $this.html();
-    var html = $this.text();
-    // console.log('before:' + html);
-    var pattern = /(\b(gen(esis)?|ex(odus)?|matt(hew)?|mark|luke|john)\s+\d+(:\d+)?(\s*(-|~)\s*\d+(:\d+)?)?\b)/gim;
+    var oldText = $this.text();
+    var newText = oldText.replace(BIBLE_REFERENCE_PATTERN, REPLACEMENT_STRING);
 
-    html = html.replace(pattern, '<a href="verseLookup(\'$1\')">$1</a>');
-    // console.log('after: ' + html);
-    $this.html(html); // TODO: This doesn't seem to work on a text node. Need to do DOM manip.
+    if (newText.length != oldText.length) {
+      var $html = $.parseHTML(newText);
+      $this.replaceWith($html);
+    }
   };
-
 })();

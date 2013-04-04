@@ -1,0 +1,8 @@
+a.bible-referencer-link {
+  text-decoration: none;
+  border-bottom: 1px dotted;
+}
+a.bible-referencer-link:hover {
+  text-decoration: none;
+  border-bottom: 1px solid;
+}

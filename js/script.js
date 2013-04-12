@@ -1,19 +1,35 @@
 (function() {
-  if (window.addEventListener) {
-    window.addEventListener('load', processPage, false);
-  } else if (window.attachEvent) {
-    window.attachEvent('onload', processPage);
-  } else {
-    // Browser too old, so ignore.
-    return;
-  }
+  // TODO: Fill out the rest of the books.
+  /**
+   * Mapping of book name variations to the canonical names.
+   */
+  var BOOK_MAP = {
+    "genesis": "genesis",
+    "gen": "genesis",
+    "exodus": "exodus",
+    "ex": "exodus",
 
-  // TODO: Fill out the rest of the patterns.
-  var BIBLE_REFERENCE_PATTERN = /(\b(gen(esis)?|ex(odus)?|matt(hew)?|mark|luke|john)\s+\d+(:\d+)?(\s*(-|~)\s*\d+(:\d+)?)?\b)/gim;
+    "matthew": "matthew",
+    "matt": "matthew",
+    "mark": "mark",
+    "luke": "luke",
+    "john": "john",
+
+    "revelation": "revelation",
+    "rev": "revelation"
+  };
+
+  var makeRegex = function(mapping) {
+    var booksPattern = Object.keys(mapping).join('|');
+    var pattern = '(\\b(' + booksPattern + ')\\s+\\d+(:\\d+)?(\\s*(-|~)\\s*\\d+(:\\d+)?)?\\b)';
+    return new RegExp(pattern, 'gim');
+  };
+
+  var REFERENCE_REGEX = makeRegex(BOOK_MAP);
   // TODO: Make replaced link call to a function.
   var REPLACEMENT_STRING = '<a class="bible-referencer-link" href="javascript:alert(\'Bible reference: $1\');">$1</a>';
 
-  function processPage() {
+  var processPage = function() {
     selectTextNodes().each(injectLink);
   }
 
@@ -38,11 +54,21 @@
   var injectLink = function() {
     var $this = $(this);
     var oldText = $this.text();
-    var newText = oldText.replace(BIBLE_REFERENCE_PATTERN, REPLACEMENT_STRING);
+    var newText = oldText.replace(REFERENCE_REGEX, REPLACEMENT_STRING);
 
     if (newText.length != oldText.length) {
       var $html = $.parseHTML(newText);
       $this.replaceWith($html);
     }
   };
+
+  var loader = function() {
+    if (document.readyState == 'complete') {
+      processPage();
+    } else {
+      setTimeout(loader, 500);
+    }
+  }
+
+  loader();
 })();
